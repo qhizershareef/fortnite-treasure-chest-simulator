@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FORTNITE TREASURE HUNTERS — Official Chest & Pirate Token Simulator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Burbank-Inspired Condensed Display Font (Anton / Oswald) & Clean UI Font (Rajdhani / Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800&family=Oswald:wght@600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --mythic: #F6C335;
+            --token: #00E5FF;
+            --legendary: #E87D2B;
+            --epic: #9D4EDD;
+            --rare: #2EC4B6;
+            --uncommon: #4CAF50;
+            --common: #9E9E9E;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #061224;
+            background-image: 
+                radial-gradient(circle at 50% 15%, rgba(14, 116, 144, 0.35) 0%, rgba(6, 18, 36, 0.92) 58%, #020813 100%),
+                url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30 Q 30 15, 60 30 T 120 30 M0 60 Q 30 45, 60 60 T 120 60 M0 90 Q 30 75, 60 90 T 120 90' fill='none' stroke='%230ea5e9' stroke-opacity='0.07' stroke-width='1.5'/%3E%3Ccircle cx='60' cy='60' r='42' fill='none' stroke='%23facc15' stroke-opacity='0.04' stroke-width='1' stroke-dasharray='4 4'/%3E%3C/svg%3E");
+            color: #f8fafc;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .font-fn-display {
+            font-family: 'Anton', 'Oswald', sans-serif;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .font-fn-sub {
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(6, 18, 36, 0.7); }
+        ::-webkit-scrollbar-thumb { background: rgba(14, 165, 233, 0.45); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(246, 195, 53, 0.8); }
+
+        /* Authentic Fortnite Skewed CTA Buttons */
+        .fn-btn {
+            position: relative;
+            transform: skewX(-7deg);
+            transition: all 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 0 #090d16, 0 8px 20px rgba(0, 0, 0, 0.45);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+        }
+        .fn-btn:hover:not(:disabled) {
+            transform: skewX(-7deg) translateY(-2px) scale(1.02);
+            filter: brightness(1.08);
+        }
+        .fn-btn:active:not(:disabled) {
+            transform: skewX(-7deg) translateY(2px) scale(0.98);
+            box-shadow: 0 1px 0 #090d16;
+        }
+        .fn-btn > span, .fn-btn > div {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transform: skewX(7deg);
+        }
+
+        /* Fortnite Item Shop Diagonal Rarity Gradients */
+        .rarity-card-mythic {
+            background: linear-gradient(145deg, #fef08a 0%, #F6C335 42%, #b45309 100%);
+            border-color: #ffffff;
+        }
+        .rarity-card-token {
+            background: linear-gradient(145deg, #00E5FF 0%, #0284c7 48%, #F6C335 100%);
+            border-color: #fef08a;
+        }
+        .rarity-card-legendary {
+            background: linear-gradient(145deg, #fdba74 0%, #E87D2B 50%, #9a3412 100%);
+            border-color: #fed7aa;
+        }
+        .rarity-card-epic {
+            background: linear-gradient(145deg, #d8b4fe 0%, #9D4EDD 50%, #4c1d95 100%);
+            border-color: #e9d5ff;
+        }
+        .rarity-card-rare {
+            background: linear-gradient(145deg, #67e8f9 0%, #2EC4B6 50%, #115e59 100%);
+            border-color: #a5f3fc;
+        }
+        .rarity-card-uncommon {
+            background: linear-gradient(145deg, #86efac 0%, #4CAF50 50%, #14532d 100%);
+            border-color: #bbf7d0;
+        }
+        .rarity-card-common {
+            background: linear-gradient(145deg, #d4d4d8 0%, #9E9E9E 50%, #3f3f46 100%);
+            border-color: #e4e4e7;
+        }
+
+        /* Metallic Diagonal Sheen Overlay */
+        .fn-sheen {
+            position: relative;
+            overflow: hidden;
+        }
+        .fn-sheen::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 45%;
+            height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.28), transparent);
+            transform: rotate(25deg);
+            pointer-events: none;
+        }
+
+        /* Chest Animations */
+        .chest-stage { perspective: 1100px; }
+        .chest-wrapper {
+            cursor: pointer;
+            transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+        .chest-wrapper:hover { transform: scale(1.05) translateY(-4px); }
+        .chest-wrapper:active { transform: scale(0.96); }
+
+        @keyframes idleFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-7px); }
+        }
+        .chest-idle { animation: idleFloat 3s ease-in-out infinite; }
+
+        @keyframes keyholePulse {
+            0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 6px #00E5FF); }
+            50% { opacity: 1; filter: drop-shadow(0 0 18px #F6C335); }
+        }
+        .chest-rune { animation: keyholePulse 2.2s ease-in-out infinite; }
+
+        @keyframes chestShake {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            15% { transform: rotate(-5deg) scale(1.06); }
+            30% { transform: rotate(5deg) scale(1.08); }
+            45% { transform: rotate(-6deg) scale(1.1); }
+            60% { transform: rotate(6deg) scale(1.12); }
+            75% { transform: rotate(-4deg) scale(1.14); }
+            90% { transform: rotate(4deg) scale(1.15); }
+        }
+        .chest-shaking { animation: chestShake 0.4s ease-in-out; }
+
+        .chest-lid {
+            transform-origin: 50% 52%;
+            transition: transform 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .chest-open .chest-lid {
+            transform: translateY(-28px) rotateX(46deg) scaleY(0.75);
+        }
+
+        .chest-beam {
+            opacity: 0;
+            transform: scale(0.3);
+            transition: all 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        .chest-open .chest-beam {
+            opacity: 1;
+            transform: scale(1.3);
+        }
+
+        @keyframes lootPop {
+            0% { opacity: 0; transform: translateY(30px) scale(0.3) rotate(-8deg); }
+            65% { opacity: 1; transform: translateY(-12px) scale(1.07) rotate(2deg); }
+            100% { opacity: 1; transform: translateY(0px) scale(1) rotate(0deg); }
+        }
+        .loot-pop-anim { animation: lootPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0); }
+            12% { transform: translate(-9px, -7px) rotate(-0.8deg); }
+            25% { transform: translate(9px, 6px) rotate(0.8deg); }
+            38% { transform: translate(-7px, 7px) rotate(-0.6deg); }
+            50% { transform: translate(7px, -5px) rotate(0.6deg); }
+            65% { transform: translate(-4px, -3px); }
+            80% { transform: translate(4px, 3px); }
+        }
+        .treasure-screen-shake { animation: screenShake 0.6s ease-out; }
+
+        @keyframes sunRaySpin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .sun-rays {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 220vmax;
+            height: 220vmax;
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(246, 195, 53, 0.25) 0deg 10deg,
+                transparent 10deg 20deg
+            );
+            animation: sunRaySpin 18s linear infinite;
+            pointer-events: none;
+            z-index: 40;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-yellow-400 selection:text-slate-950">
+
+    <!-- Particle Burst Canvas -->
+    <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <!-- NEW TREASURE UNLOCKED CELEBRATION MODAL -->
+    <div id="treasureModal" class="fixed inset-0 z-40 hidden flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+        <div class="sun-rays"></div>
+        <div id="treasureModalCard" class="relative z-50 max-w-md w-full bg-slate-900 border-4 border-yellow-400 rounded-3xl p-6 sm:p-7 text-center shadow-[0_0_70px_rgba(246,195,53,0.75)]">
+            <div class="inline-block px-4 py-1 rounded-full bg-yellow-400 text-slate-950 font-fn-sub font-extrabold text-xs tracking-widest uppercase mb-2 shadow">
+                ★ TREASURE HUNTERS JACKPOT ★
+            </div>
+            <h2 class="font-fn-display text-3xl sm:text-4xl text-yellow-300 drop-shadow-[0_3px_0_rgba(0,0,0,0.9)] tracking-wide">
+                NEW TREASURE UNLOCKED!
+            </h2>
+            <p id="modalTreasureSubtitle" class="text-cyan-300 text-xs sm:text-sm font-bold mt-1 mb-5">
+                1 in 137,500 Drop Rate • Unlocked on Chest #1
+            </p>
+
+            <!-- High-Detail Reward Art Showcase -->
+            <div id="modalArtWrapper" class="mx-auto w-56 rounded-2xl p-1.5 shadow-2xl mb-5 rarity-card-token fn-sheen">
+                <div class="bg-slate-950/85 rounded-xl p-4 flex flex-col items-center">
+                    <div id="modalRewardSvg" class="w-36 h-36 flex items-center justify-center"></div>
+                    <span id="modalRewardRarityTag" class="mt-2 px-3 py-0.5 rounded bg-yellow-400 text-slate-950 font-fn-sub font-extrabold text-xs">
+                        PIRATE SHOP TOKEN
+                    </span>
+                    <h3 id="modalRewardName" class="font-fn-display text-xl text-white mt-1 tracking-wide">
+                        Pirate Shop Access Token
+                    </h3>
+                </div>
+            </div>
+
+            <p id="modalRewardDesc" class="text-xs text-slate-300 bg-slate-950/75 border border-slate-800 rounded-xl p-3 mb-5 leading-relaxed">
+                Unlocks 14 Days of Free Item Shop Access + 2027 Bonus Token!
+            </p>
+
+            <div class="grid grid-cols-2 gap-3 mb-5 text-xs">
+                <div class="bg-slate-950/90 border border-cyan-500/30 rounded-xl p-2.5">
+                    <span class="text-slate-400 block">Official / Active Odds</span>
+                    <span id="modalOddsStat" class="text-yellow-300 font-mono font-bold text-sm">1 in 137,500</span>
+                </div>
+                <div class="bg-slate-950/90 border border-cyan-500/30 rounded-xl p-2.5">
+                    <span class="text-slate-400 block">Total Chests Opened</span>
+                    <span id="modalChestNumStat" class="text-cyan-300 font-mono font-bold text-sm">1</span>
+                </div>
+            </div>
+
+            <button id="closeTreasureModalBtn" class="fn-btn w-full py-3.5 px-6 bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-slate-950 font-fn-display text-xl rounded-xl cursor-pointer">
+                <span>CLAIM REWARD & CONTINUE</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="w-full border-b-2 border-cyan-500/25 bg-slate-950/80 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/30 border-2 border-white/40">
+                    <!-- Skull Doubloon Mini Emblem -->
+                    <svg viewBox="0 0 48 48" class="w-7 h-7">
+                        <circle cx="24" cy="24" r="20" fill="#fef08a" stroke="#78350f" stroke-width="3"/>
+                        <path d="M16 22a8 8 0 0 1 16 0c0 3-1.5 5-3 6v4H19v-4c-1.5-1-3-3-3-6z" fill="#78350f"/>
+                        <circle cx="20.5" cy="21" r="2" fill="#fef08a"/>
+                        <circle cx="27.5" cy="21" r="2" fill="#fef08a"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 font-fn-sub font-bold text-[10px] tracking-widest">
+                            CHAPTER 7 • MINI-SEASON
+                        </span>
+                        <span id="headerRateModeBadge" class="px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-slate-200 font-fn-sub font-bold text-[10px] tracking-wider">
+                            NORMAL MATCH (1X)
+                        </span>
+                    </div>
+                    <h1 class="font-fn-display text-xl sm:text-2xl tracking-wider text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.8)]">
+                        FORTNITE <span class="text-yellow-400">TREASURE HUNTERS</span> SIMULATOR
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Weekly Captain Selector & Quick Controls -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <!-- Weekly Captain Preset Selector -->
+                <div class="flex items-center gap-2 bg-slate-900 border border-cyan-500/40 rounded-xl px-3 py-1.5">
+                    <label for="weekPresetSelect" class="text-[11px] font-fn-sub font-bold text-cyan-300 whitespace-nowrap">CAPTAIN WEEK:</label>
+                    <select id="weekPresetSelect" class="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer">
+                        <option value="week3" class="bg-slate-900" selected>Week 3: Hatsune Miku (Solid Gold Miku)</option>
+                        <option value="week1" class="bg-slate-900">Week 1: A$AP Rocky (Solid Gold Rugahand)</option>
+                        <option value="week2" class="bg-slate-900">Week 2: Lil' Uzi Vert (Solid Gold Uzi)</option>
+                        <option value="week4" class="bg-slate-900">Week 4: Oscar (Solid Gold Kasane Teto)</option>
+                        <option value="week5" class="bg-slate-900">Week 5: Brigand Jones (Solid Gold Captain X)</option>
+                    </select>
+                </div>
+
+                <!-- Normal 1x vs Treasure Hour Toggle -->
+                <div class="flex bg-slate-900 p-1 rounded-xl border border-yellow-500/40 text-xs font-fn-sub font-bold">
+                    <button id="rateNormalBtn" class="px-3 py-1 rounded-lg bg-cyan-500 text-slate-950 transition cursor-pointer">
+                        Normal (1x)
+                    </button>
+                    <button id="rateTreasureHourBtn" class="px-3 py-1 rounded-lg text-yellow-300 hover:bg-yellow-400/10 transition cursor-pointer">
+                        ⚡ Treasure Hour
+                    </button>
+                </div>
+
+                <!-- SFX Toggle -->
+                <button id="soundToggleBtn" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 flex items-center gap-1.5 cursor-pointer">
+                    <span id="soundIconText">🔊 SFX ON</span>
+                </button>
+
+                <!-- Reset All -->
+                <button id="resetAllBtn" class="px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/50 text-rose-300 text-xs font-bold cursor-pointer">
+                    Reset Session
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN DASHBOARD WORKSPACE -->
+    <main class="max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-5 space-y-6">
+
+        <!-- TOP ROW: 3-COLUMN SIMULATOR ARENA -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+            <!-- LEFT PANEL (4 Cols): SQUAD & MATCH GRIND ODDS CALCULATOR -->
+            <section class="lg:col-span-4 bg-slate-900/85 border-2 border-cyan-500/35 rounded-3xl p-5 backdrop-blur-md shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <span class="text-[10px] font-fn-sub font-extrabold text-cyan-400 tracking-widest">TEAM PROBABILITY PLANNER</span>
+                        <h2 class="font-fn-display text-xl text-white tracking-wide">
+                            YOUR GRIND PROBABILITY
+                        </h2>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 text-[11px] font-bold">
+                        Squad Share Active
+                    </span>
+                </div>
+
+                <!-- 1. Party Size Selector -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                        1. Select Your Party Mode <span class="text-cyan-400 font-normal">(Teammate chests count too!)</span>
+                    </label>
+                    <div class="grid grid-cols-4 gap-2" id="partyModeSelector">
+                        <button data-party="1" class="party-btn py-2 px-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 hover:border-cyan-400 text-xs font-fn-sub font-bold transition cursor-pointer">
+                            SOLO<span class="block text-[10px] opacity-75">1 Player</span>
+                        </button>
+                        <button data-party="2" class="party-btn py-2 px-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 hover:border-cyan-400 text-xs font-fn-sub font-bold transition cursor-pointer">
+                            DUOS<span class="block text-[10px] opacity-75">2 Players</span>
+                        </button>
+                        <button data-party="3" class="party-btn py-2 px-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 hover:border-cyan-400 text-xs font-fn-sub font-bold transition cursor-pointer">
+                            TRIOS<span class="block text-[10px] opacity-75">3 Players</span>
+                        </button>
+                        <button data-party="4" class="party-btn py-2 px-2 rounded-xl bg-cyan-500/25 border-2 border-cyan-400 text-white text-xs font-fn-sub font-bold transition cursor-pointer">
+                            SQUADS<span class="block text-[10px] text-cyan-300">4 Players</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Chests Opened per Player per Match -->
+                <div class="bg-slate-950/75 border border-slate-800 rounded-2xl p-3">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label for="chestsPerPlayerInput" class="text-xs font-bold text-slate-300">
+                            2. Chests Opened / Player / Match
+                        </label>
+                        <input id="chestsPerPlayerInput" type="number" min="1" max="100" value="8" 
+                            class="w-16 bg-slate-900 border border-cyan-500/40 rounded-lg px-2 py-1 text-right font-mono font-bold text-sm text-cyan-300 focus:outline-none">
+                    </div>
+                    <input id="chestsPerPlayerSlider" type="range" min="1" max="40" value="8" class="w-full accent-cyan-400 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                        <span>Casual (4)</span>
+                        <span>Standard (8)</span>
+                        <span>Loot Route (18+)</span>
+                    </div>
+                </div>
+
+                <!-- 3. Number of Matches Planned / Played -->
+                <div class="bg-slate-950/75 border border-slate-800 rounded-2xl p-3">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label for="matchesCountInput" class="text-xs font-bold text-slate-300">
+                            3. Matches Planned / Played
+                        </label>
+                        <input id="matchesCountInput" type="number" min="1" max="5000" value="25" 
+                            class="w-20 bg-slate-900 border border-yellow-500/40 rounded-lg px-2 py-1 text-right font-mono font-bold text-sm text-yellow-300 focus:outline-none">
+                    </div>
+                    <input id="matchesCountSlider" type="range" min="1" max="250" value="25" class="w-full accent-yellow-400 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                        <span>1 Match</span>
+                        <span>25 Matches</span>
+                        <span>100+ Grind</span>
+                    </div>
+                </div>
+
+                <!-- Live Calculated Grind Results Box -->
+                <div class="bg-gradient-to-br from-cyan-950/70 via-slate-950 to-amber-950/40 border border-yellow-400/40 rounded-2xl p-3.5 space-y-2.5">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <span class="text-xs text-slate-300 font-semibold">Total Team Chest Rolls:</span>
+                        <span id="calcTotalTeamChests" class="font-mono text-lg font-extrabold text-white">800 Chests</span>
+                    </div>
+
+                    <!-- Pirate Token Cumulative Chance -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-cyan-300 block">Pirate Shop Token Chance</span>
+                            <span id="calcTokenOddsSub" class="text-[10px] text-slate-400 font-mono">At 1 in 137,500 per chest</span>
+                        </div>
+                        <span id="calcTokenProb" class="font-mono text-lg font-extrabold text-cyan-300">0.580%</span>
+                    </div>
+
+                    <!-- Weekly Gold Outfit Cumulative Chance -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span id="calcOutfitLabel" class="text-xs font-bold text-yellow-300 block">Solid Gold Miku Chance</span>
+                            <span id="calcOutfitOddsSub" class="text-[10px] text-slate-400 font-mono">At 1 in 1,562,500 per chest</span>
+                        </div>
+                        <span id="calcOutfitProb" class="font-mono text-sm font-extrabold text-yellow-300">0.051%</span>
+                    </div>
+
+                    <!-- Any Cosmetic Treasure Chance -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-300">Any Cosmetic Treasure (≥1)</span>
+                        <span id="calcAnyCosmeticProb" class="font-mono text-sm font-extrabold text-emerald-300">98.81%</span>
+                    </div>
+
+                    <!-- Milestone Benchmarks -->
+                    <div class="pt-2 border-t border-slate-800/80 text-[11px] text-slate-300 flex justify-between">
+                        <span>50% Token Shot: <strong id="calcFiftyPctTarget" class="text-white font-mono">95,308 chests</strong></span>
+                        <span>90% Shot: <strong id="calcNinetyPctTarget" class="text-white font-mono">316,605</strong></span>
+                    </div>
+                </div>
+
+                <!-- One-Click Simulate Exact Grind Button -->
+                <button id="simulateGrindBtn" class="fn-btn w-full py-3 px-4 bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 text-slate-950 font-fn-display text-lg rounded-xl cursor-pointer">
+                    <span id="simulateGrindBtnText">⚡ SIMULATE THIS 800-CHEST GRIND</span>
+                </button>
+            </section>
+
+            <!-- CENTER PANEL (4 Cols): INTERACTIVE FORTNITE TREASURE CHEST ARENA -->
+            <section class="lg:col-span-4 bg-gradient-to-b from-cyan-950/55 via-slate-900/85 to-slate-950/95 border-2 border-yellow-400/40 rounded-3xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[560px]">
+                
+                <!-- Ambient Spotlight -->
+                <div id="chestSpotlight" class="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(0,229,255,0.22)_0%,transparent_68%)] pointer-events-none transition-all duration-500"></div>
+
+                <!-- Top Arena Pill & Duplicate Protection Toggle -->
+                <div class="relative z-10 flex items-center justify-between gap-2">
+                    <span id="arenaStatusPill" class="px-3 py-1 rounded-full bg-yellow-400/15 border border-yellow-400/50 text-yellow-300 text-[11px] font-fn-sub font-bold tracking-wider">
+                        ⚡ CLICK CHEST OR PRESS SPACE
+                    </span>
+
+                    <label class="flex items-center gap-1.5 text-[11px] text-slate-300 bg-slate-950/80 px-2.5 py-1 rounded-full border border-slate-700 cursor-pointer" title="Official Epic Rule: Major cosmetic treasures & tokens can only be won once per account">
+                        <input id="dupProtectionCheckbox" type="checkbox" checked class="accent-yellow-400 cursor-pointer">
+                        <span class="font-semibold">Dup. Protection</span>
+                    </label>
+                </div>
+
+                <!-- Pop-out Reward Card Display -->
+                <div class="relative z-10 my-2 min-h-[155px] flex items-center justify-center">
+                    <div id="rewardEmptyState" class="text-center">
+                        <p class="font-fn-display text-lg text-yellow-300/90 tracking-wider">TREASURE HUNTERS CHEST</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Contains Standard Loot, Gizmos, Weekly Cosmetics & <span class="text-cyan-300 font-bold">Pirate Tokens</span></p>
+                    </div>
+
+                    <!-- Active Reward Showcase Card -->
+                    <div id="rewardActiveCard" class="hidden w-full max-w-[310px] rounded-2xl border-2 p-3 shadow-2xl flex items-center gap-3.5 fn-sheen">
+                        <div id="rewardArtContainer" class="w-20 h-20 rounded-xl bg-slate-950/75 border border-white/25 flex items-center justify-center shrink-0 p-1">
+                            <!-- Custom Illustrated SVG Artwork injected here -->
+                        </div>
+                        <div class="text-left overflow-hidden flex-1">
+                            <div class="flex items-center gap-1.5">
+                                <span id="rewardRarityBadge" class="text-[10px] font-fn-sub font-extrabold uppercase px-2 py-0.5 rounded bg-black/55 text-white">
+                                    COMMON
+                                </span>
+                                <span id="rewardOddsPill" class="text-[10px] font-mono text-white/90 bg-black/35 px-1.5 py-0.5 rounded">
+                                    98.69%
+                                </span>
+                            </div>
+                            <h3 id="rewardTitleText" class="font-fn-display text-lg text-white leading-tight truncate mt-1">
+                                Gold Bars & Assault Rifle
+                            </h3>
+                            <p id="rewardSubText" class="text-[11px] text-white/85 truncate mt-0.5">
+                                Chest #1 • Standard Loot
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Ornate Fortnite Treasure Chest SVG -->
+                <div class="relative z-10 flex items-center justify-center my-auto chest-stage">
+                    <div id="chestContainer" class="chest-wrapper chest-idle relative w-60 h-48 sm:w-64 sm:h-52 flex items-center justify-center" role="button" tabindex="0" aria-label="Open Fortnite Treasure Chest">
+                        <div class="absolute bottom-2 w-48 h-7 bg-black/70 rounded-full blur-md"></div>
+                        <div id="chestLightBeam" class="chest-beam absolute bottom-14 w-56 h-56 rounded-full bg-gradient-to-t from-yellow-400/70 via-cyan-300/35 to-transparent blur-xl"></div>
+
+                        <svg viewBox="0 0 260 220" class="w-full h-full overflow-visible drop-shadow-[0_14px_24px_rgba(0,0,0,0.75)]">
+                            <defs>
+                                <linearGradient id="fnChestTeal" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#0e7490"/>
+                                    <stop offset="55%" stop-color="#155e75"/>
+                                    <stop offset="100%" stop-color="#083344"/>
+                                </linearGradient>
+                                <linearGradient id="fnChestLidGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#22d3ee"/>
+                                    <stop offset="45%" stop-color="#0284c7"/>
+                                    <stop offset="100%" stop-color="#1e3a8a"/>
+                                </linearGradient>
+                                <linearGradient id="fnGoldTrim" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#fef08a"/>
+                                    <stop offset="40%" stop-color="#F6C335"/>
+                                    <stop offset="80%" stop-color="#d97706"/>
+                                    <stop offset="100%" stop-color="#78350f"/>
+                                </linearGradient>
+                                <radialGradient id="fnInnerBurst" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stop-color="#ffffff"/>
+                                    <stop offset="45%" stop-color="#fef08a"/>
+                                    <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                                </radialGradient>
+                            </defs>
+
+                            <!-- CHEST BASE -->
+                            <g>
+                                <path d="M40 108 L220 108 L210 188 Q208 196 198 196 L62 196 Q52 196 50 188 Z" fill="url(#fnChestTeal)" stroke="#050b14" stroke-width="4"/>
+                                <ellipse cx="130" cy="108" rx="80" ry="15" fill="url(#fnInnerBurst)"/>
+                                <!-- Heavy Gold Straps -->
+                                <path d="M40 108 L64 108 L68 196 L50 196 Z" fill="url(#fnGoldTrim)" stroke="#050b14" stroke-width="3"/>
+                                <path d="M220 108 L196 108 L192 196 L210 196 Z" fill="url(#fnGoldTrim)" stroke="#050b14" stroke-width="3"/>
+                                <rect x="47" y="182" width="166" height="14" rx="4" fill="url(#fnGoldTrim)" stroke="#050b14" stroke-width="3"/>
+                                <!-- Pirate Compass & Runes -->
+                                <g class="chest-rune" stroke="#00E5FF" stroke-width="2.5" fill="none">
+                                    <circle cx="130" cy="156" r="16" stroke="#F6C335" stroke-width="2.5"/>
+                                    <polygon points="130,136 134,152 150,156 134,160 130,176 126,160 110,156 126,152" fill="#00E5FF" stroke="none"/>
+                                    <path d="M84 140 L84 172 M76 148 L92 148"/>
+                                    <path d="M176 140 L176 172 M168 148 L184 148"/>
+                                </g>
+                            </g>
+
+                            <!-- CHEST LID -->
+                            <g class="chest-lid">
+                                <path d="M34 108 Q34 50 72 44 L188 44 Q226 50 226 108 Z" fill="url(#fnChestLidGrad)" stroke="#050b14" stroke-width="4"/>
+                                <path d="M56 62 Q130 50 204 62" fill="none" stroke="#a5f3fc" stroke-width="3.5" stroke-linecap="round" opacity="0.75"/>
+                                <path d="M44 108 Q46 52 74 44 L90 44 Q68 54 66 108 Z" fill="url(#fnGoldTrim)" stroke="#050b14" stroke-width="3"/>
+                                <path d="M216 108 Q214 52 186 44 L170 44 Q192 54 194 108 Z" fill="url(#fnGoldTrim)" stroke="#050b14" stroke-width="3"/>
+                                <rect x="32" y="98" width="196" height="14" rx="5" fill="url(#fnGoldTrim)" stroke="#050b14" stroke-width="3.5"/>
+                                <!-- Skull Crest on Lid -->
+                                <circle cx="130" cy="73" r="15" fill="#083344" stroke="#F6C335" stroke-width="3"/>
+                                <circle cx="130" cy="73" r="8" fill="#00E5FF" class="chest-rune"/>
+                                <!-- Center Keyhole Lock -->
+                                <rect x="111" y="91" width="38" height="35" rx="8" fill="url(#fnGoldTrim)" stroke="#050b14" stroke-width="3.5"/>
+                                <circle cx="130" cy="106" r="5" fill="#050b14"/>
+                                <path d="M127 108 L133 108 L135 118 L125 118 Z" fill="#050b14"/>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Primary Open Chest & Batch Auto-Sim Bar -->
+                <div class="relative z-10 space-y-2.5 pt-2">
+                    <button id="openChestBtn" class="fn-btn w-full py-3.5 px-6 bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-slate-950 font-fn-display text-xl tracking-wider rounded-2xl cursor-pointer">
+                        <span>OPEN TREASURE CHEST</span>
+                    </button>
+
+                    <!-- Quick Batch Open Controls -->
+                    <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-2.5">
+                        <div class="flex items-center gap-2">
+                            <input id="batchCountInput" type="number" min="1" max="500000" value="1000" 
+                                class="w-24 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 font-mono font-bold text-sm text-white focus:outline-none focus:border-yellow-400"
+                                aria-label="Number of chests to auto-open">
+                            <button id="runBatchBtn" class="fn-btn flex-1 py-2 px-3 bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-fn-display text-sm rounded-xl cursor-pointer">
+                                <span>AUTO-OPEN N</span>
+                            </button>
+                            <button id="stopBatchBtn" class="hidden fn-btn py-2 px-3 bg-rose-600 text-white font-fn-display text-sm rounded-xl cursor-pointer">
+                                <span>STOP</span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between mt-2 px-1 text-[11px] text-slate-400">
+                            <div class="flex items-center gap-2">
+                                <button id="simSpeedVisualBtn" class="text-cyan-300 font-bold underline cursor-pointer">Visual</button>
+                                <span>|</span>
+                                <button id="simSpeedTurboBtn" class="text-slate-400 hover:text-white font-bold cursor-pointer">Instant Turbo</button>
+                            </div>
+                            <label class="flex items-center gap-1.5 cursor-pointer text-slate-300">
+                                <input id="pauseOnMajorCheckbox" type="checkbox" checked class="accent-yellow-400">
+                                <span>Stop on Token/Gold Skin</span>
+                            </label>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div id="batchProgressBox" class="hidden mt-2">
+                            <div class="flex justify-between text-[10px] font-mono text-cyan-300 mb-0.5">
+                                <span id="batchProgressText">0 / 1,000</span>
+                                <span id="batchProgressPct">0%</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                                <div id="batchProgressFill" class="h-full bg-gradient-to-r from-cyan-400 to-yellow-400" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL (4 Cols): OFFICIAL ODDS CUSTOMIZER & TELEMETRY -->
+            <section class="lg:col-span-4 space-y-4">
+                
+                <!-- Card 1: Official Epic Games Drop Rates Table (Editable 1-in-N) -->
+                <div class="bg-slate-900/85 border-2 border-yellow-500/30 rounded-3xl p-4 backdrop-blur-md shadow-2xl">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <span class="text-[10px] font-fn-sub font-extrabold text-yellow-400 tracking-widest">EPIC GAMES PUBLISHED RATES</span>
+                            <h2 class="font-fn-display text-lg text-white tracking-wide">CUSTOMIZE 1-IN-N ODDS</h2>
+                        </div>
+                        <button id="resetOfficialOddsBtn" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[11px] font-bold text-cyan-300 cursor-pointer">
+                            Reset Official
+                        </button>
+                    </div>
+
+                    <div id="customOddsList" class="space-y-1.5 max-h-[265px] overflow-y-auto pr-1 text-xs">
+                        <!-- Dynamically rendered rows with 1-in-N input boxes -->
+                    </div>
+                </div>
+
+                <!-- Card 2: Live Session Telemetry & Drop Feed -->
+                <div class="bg-slate-900/85 border border-slate-700/80 rounded-3xl p-4 backdrop-blur-md shadow-xl">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="font-fn-display text-base text-cyan-300 tracking-wide">LIVE SESSION TELEMETRY</h2>
+                        <span id="sessionLuckTag" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px] font-bold">Ready</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+                        <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-2">
+                            <span class="text-[10px] text-slate-400 block">OPENED</span>
+                            <span id="statOpened" class="font-mono text-base font-extrabold text-white">0</span>
+                        </div>
+                        <div class="bg-slate-950/90 border border-cyan-500/30 rounded-xl p-2">
+                            <span class="text-[10px] text-cyan-300 block">TOKENS</span>
+                            <span id="statTokens" class="font-mono text-base font-extrabold text-cyan-300">0</span>
+                        </div>
+                        <div class="bg-slate-950/90 border border-yellow-500/30 rounded-xl p-2">
+                            <span class="text-[10px] text-yellow-300 block">TREASURES</span>
+                            <span id="statTreasures" class="font-mono text-base font-extrabold text-yellow-300">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Drop Feed -->
+                    <div class="text-[10px] font-fn-sub font-bold text-slate-400 mb-1 flex justify-between">
+                        <span>RECENT CHEST DROPS</span>
+                        <span id="statDryStreak">Dry Streak: 0</span>
+                    </div>
+                    <div id="dropLogContainer" class="space-y-1 max-h-36 overflow-y-auto pr-1">
+                        <div class="text-center py-4 text-xs text-slate-500 italic">Open a chest to log rewards...</div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+
+        <!-- BOTTOM SHOWCASE: OFFICIAL TREASURE COLLECTION & REWARD ART GALLERY -->
+        <section class="bg-slate-900/85 border-2 border-cyan-500/30 rounded-3xl p-5 backdrop-blur-md shadow-2xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div>
+                    <span class="text-[10px] font-fn-sub font-extrabold text-yellow-400 tracking-widest">WEEKLY CAPTAIN & ISLAND TREASURES</span>
+                    <h2 class="font-fn-display text-xl sm:text-2xl text-white tracking-wide">
+                        TREASURE COLLECTION & REWARD GALLERY
+                    </h2>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="px-3 py-1 rounded-xl bg-slate-950 border border-slate-700 text-slate-300">
+                        Unlocked: <strong id="collectionProgressText" class="text-yellow-300 font-mono">0 / 7</strong> Official Treasures
+                    </span>
+                </div>
+            </div>
+
+            <!-- 7 Official Treasure Cards Grid -->
+            <div id="treasureGalleryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                <!-- Populated with Fortnite Item Shop style illustrated cards -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-slate-800/80 py-3 px-6 text-center text-[11px] text-slate-500">
+        Fortnite Chapter 7 Treasure Hunters Drop Simulator • Includes official Epic Games published base odds & Saturday Treasure Hour multipliers.
+    </footer>
+
+    <script>
+        /**
+         * ============================================================================
+         * FORTNITE TREASURE HUNTERS — OFFICIAL CHEST & PIRATE TOKEN SIMULATOR
+         * ============================================================================
+         */
+
+        // --- 1. WEB AUDIO SYNTHESIZER ---
+        class FortniteAudio {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AC();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            toggle() {
+                this.muted = !this.muted;
+                return this.muted;
+            }
+            playOpen(tier) {
+                if (this.muted) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(175, now);
+                    osc.frequency.exponentialRampToValueAtTime(440, now + 0.14);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.19);
+
+                    const pitches = { common: 330, uncommon: 392, rare: 494, epic: 587, legendary: 659, token: 880, mythic: 987 };
+                    const f = pitches[tier] || 350;
+                    const chime = this.ctx.createOscillator();
+                    const cGain = this.ctx.createGain();
+                    chime.type = 'sine';
+                    chime.frequency.setValueAtTime(f, now + 0.04);
+                    chime.frequency.exponentialRampToValueAtTime(f * 1.25, now + 0.34);
+                    cGain.gain.setValueAtTime(0.15, now + 0.04);
+                    cGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+                    chime.connect(cGain);
+                    cGain.connect(this.ctx.destination);
+                    chime.start(now + 0.04);
+                    chime.stop(now + 0.4);
+                } catch (e) {}
+            }
+            playTick() {
+                if (this.muted) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520 + Math.random() * 140, now);
+                    gain.gain.setValueAtTime(0.04, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.045);
+                } catch (e) {}
+            }
+            playFanfare() {
+                if (this.muted) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const notes = [
+                        { f: 523.25, t: 0.0, d: 0.24 },
+                        { f: 659.25, t: 0.11, d: 0.24 },
+                        { f: 783.99, t: 0.22, d: 0.28 },
+                        { f: 1046.50, t: 0.34, d: 0.85 },
+                        { f: 523.25, t: 0.34, d: 0.85 }
+                    ];
+                    notes.forEach(n => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        const filter = this.ctx.createBiquadFilter();
+                        osc.type = 'sawtooth';
+                        filter.type = 'lowpass';
+                        filter.frequency.setValueAtTime(2400, now + n.t);
+                        osc.frequency.setValueAtTime(n.f, now + n.t);
+                        gain.gain.setValueAtTime(0.001, now + n.t);
+                        gain.gain.linearRampToValueAtTime(0.18, now + n.t + 0.03);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+                        osc.connect(filter);
+                        filter.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now + n.t);
+                        osc.stop(now + n.t + n.d + 0.02);
+                    });
+                } catch (e) {}
+            }
+        }
+
+        // --- 2. PARTICLE SYSTEM ---
+        class ParticleBurst {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.items = [];
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                this.loop();
+            }
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            spawn(x, y, colors, count = 40, speed = 10, big = false) {
+                for (let i = 0; i < count; i++) {
+                    const ang = Math.random() * Math.PI * 2;
+                    const spd = (Math.random() * 0.75 + 0.25) * speed;
+                    this.items.push({
+                        x, y,
+                        vx: Math.cos(ang) * spd,
+                        vy: Math.sin(ang) * spd - (big ? 4 : 2),
+                        size: big ? Math.random() * 7 + 4 : Math.random() * 4.5 + 2,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        alpha: 1,
+                        decay: Math.random() * 0.018 + 0.012,
+                        rot: Math.random() * 360,
+                        vRot: (Math.random() - 0.5) * 12
+                    });
+                }
+            }
+            loop() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                for (let i = this.items.length - 1; i >= 0; i--) {
+                    const p = this.items[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.2;
+                    p.alpha -= p.decay;
+                    p.rot += p.vRot;
+                    if (p.alpha <= 0) { this.items.splice(i, 1); continue; }
+                    this.ctx.save();
+                    this.ctx.globalAlpha = p.alpha;
+                    this.ctx.translate(p.x, p.y);
+                    this.ctx.rotate(p.rot * Math.PI / 180);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+                    this.ctx.restore();
+                }
+                requestAnimationFrame(() => this.loop());
+            }
+        }
+
+        // --- 3. BESPOKE HIGH-DETAIL REWARD ARTWORK & WEEKLY PRESETS ---
+        const REWARD_SVGS = {
+            outfit: `<svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-[0_4px_10px_rgba(246,195,53,0.7)]">
+                <defs>
+                    <linearGradient id="goldSkin" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fef9c3"/><stop offset="45%" stop-color="#F6C335"/><stop offset="100%" stop-color="#92400e"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="60" cy="60" r="50" fill="url(#goldSkin)" opacity="0.22"/>
+                <!-- Twin-tails / Stylized Golden Idol Silhouette -->
+                <path d="M32 34 C16 48, 14 78, 22 98 C28 84, 32 66, 38 52 Z" fill="url(#goldSkin)" stroke="#fff" stroke-width="1.5"/>
+                <path d="M88 34 C104 48, 106 78, 98 98 C92 84, 88 66, 82 52 Z" fill="url(#goldSkin)" stroke="#fff" stroke-width="1.5"/>
+                <!-- Head & Crown -->
+                <circle cx="60" cy="44" r="18" fill="url(#goldSkin)" stroke="#fff" stroke-width="2"/>
+                <path d="M46 27 L52 17 L60 24 L68 17 L74 27 Z" fill="#fef08a" stroke="#78350f" stroke-width="1.5"/>
+                <!-- Golden Jacket Torso -->
+                <path d="M36 96 L42 66 L78 66 L84 96 Z" fill="url(#goldSkin)" stroke="#fff" stroke-width="2"/>
+                <polygon points="60,67 55,84 60,91 65,84" fill="#00E5FF" stroke="#fff" stroke-width="1"/>
+            </svg>`,
+
+            token: `<svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-[0_0_14px_rgba(0,229,255,0.85)]">
+                <defs>
+                    <linearGradient id="doubloonGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#F6C335"/><stop offset="100%" stop-color="#b45309"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#00E5FF" stroke-width="3" stroke-dasharray="8 4"/>
+                <circle cx="60" cy="60" r="41" fill="url(#doubloonGold)" stroke="#ffffff" stroke-width="3"/>
+                <circle cx="60" cy="60" r="33" fill="none" stroke="#78350f" stroke-width="2" stroke-dasharray="4 3"/>
+                <!-- Pirate Skull Emblem -->
+                <path d="M44 54 C44 42, 76 42, 76 54 C76 61, 71 65, 68 67 L68 75 L52 75 L52 67 C49 65, 44 61, 44 54 Z" fill="#083344"/>
+                <circle cx="53" cy="54" r="4.5" fill="#00E5FF"/>
+                <circle cx="67" cy="54" r="4.5" fill="#00E5FF"/>
+                <rect x="56" y="69" width="2.5" height="6" fill="#F6C335"/>
+                <rect x="61.5" y="69" width="2.5" height="6" fill="#F6C335"/>
+                <!-- Crown Top -->
+                <path d="M47 41 L52 33 L60 39 L68 33 L73 41 Z" fill="#00E5FF" stroke="#083344" stroke-width="1.5"/>
+            </svg>`,
+
+            vehicle: `<svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-[0_4px_10px_rgba(232,125,43,0.8)]">
+                <defs>
+                    <linearGradient id="zr1Body" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#fde047"/><stop offset="50%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#ea580c"/>
+                    </linearGradient>
+                </defs>
+                <!-- Supercar Silhouette -->
+                <path d="M12 74 L22 58 L46 46 L78 46 L98 58 L110 66 L108 78 L12 78 Z" fill="url(#zr1Body)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+                <!-- Cockpit Glass -->
+                <path d="M46 49 L74 49 L86 58 L38 58 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+                <!-- Rear Spoiler -->
+                <path d="M14 58 L10 47 L22 49" fill="none" stroke="#fef08a" stroke-width="3" stroke-linecap="round"/>
+                <!-- Golden Llama Stripe -->
+                <path d="M26 67 L96 67" stroke="#fef08a" stroke-width="2.5" stroke-dasharray="10 3"/>
+                <!-- Wheels -->
+                <circle cx="34" cy="78" r="12" fill="#090d16" stroke="#F6C335" stroke-width="3"/>
+                <circle cx="34" cy="78" r="5" fill="#F6C335"/>
+                <circle cx="88" cy="78" r="12" fill="#090d16" stroke="#F6C335" stroke-width="3"/>
+                <circle cx="88" cy="78" r="5" fill="#F6C335"/>
+            </svg>`,
+
+            backbling: `<svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-[0_4px_8px_rgba(157,78,221,0.8)]">
+                <!-- Takarabako Ornate Treasure Box -->
+                <rect x="24" y="46" width="72" height="48" rx="8" fill="#7e22ce" stroke="#f3e8ff" stroke-width="2.5"/>
+                <path d="M24 46 Q60 22 96 46 Z" fill="#a855f7" stroke="#f3e8ff" stroke-width="2.5"/>
+                <rect x="38" y="34" width="10" height="60" fill="#F6C335" stroke="#090d16" stroke-width="1.5"/>
+                <rect x="72" y="34" width="10" height="60" fill="#F6C335" stroke="#090d16" stroke-width="1.5"/>
+                <rect x="50" y="54" width="20" height="20" rx="4" fill="#F6C335" stroke="#090d16" stroke-width="2"/>
+                <circle cx="60" cy="64" r="4" fill="#00E5FF"/>
+            </svg>`,
+
+            jamtrack: `<svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-[0_4px_8px_rgba(46,196,182,0.8)]">
+                <circle cx="60" cy="60" r="44" fill="#0f172a" stroke="#2EC4B6" stroke-width="3"/>
+                <circle cx="60" cy="60" r="34" fill="none" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="60" cy="60" r="25" fill="none" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="60" cy="60" r="16" fill="#2EC4B6" stroke="#fff" stroke-width="2"/>
+                <circle cx="60" cy="60" r="4" fill="#0f172a"/>
+                <!-- Music Note -->
+                <path d="M76 26 L76 52 A6 6 0 1 1 70 46 L70 30 L88 24 L88 46 A6 6 0 1 1 82 40 L82 28 Z" fill="#fef08a"/>
+            </svg>`,
+
+            loadingscreen: `<svg viewBox="0 0 120 120" class="w-full h-full">
+                <rect x="14" y="24" width="92" height="72" rx="8" fill="#0c4a6e" stroke="#38bdf8" stroke-width="3"/>
+                <circle cx="84" cy="44" r="10" fill="#F6C335"/>
+                <!-- Island Mountains & Palm -->
+                <polygon points="20,92 48,48 76,92" fill="#0284c7"/>
+                <polygon points="52,92 78,56 102,92" fill="#0369a1"/>
+                <path d="M22 86 Q60 76 98 86 L98 92 L22 92 Z" fill="#facc15"/>
+            </svg>`,
+
+            gizmo: `<svg viewBox="0 0 120 120" class="w-full h-full">
+                <rect x="32" y="24" width="56" height="72" rx="14" fill="#14532d" stroke="#4ade80" stroke-width="3"/>
+                <circle cx="60" cy="56" r="18" fill="#052e16" stroke="#86efac" stroke-width="2.5"/>
+                <circle cx="60" cy="56" r="9" fill="#4ade80"/>
+                <rect x="46" y="80" width="28" height="6" rx="3" fill="#bef264"/>
+                <path d="M60 12 L60 24" stroke="#86efac" stroke-width="4" stroke-linecap="round"/>
+            </svg>`,
+
+            standard: `<svg viewBox="0 0 120 120" class="w-full h-full">
+                <!-- Gold Bars + Shield Potion -->
+                <path d="M44 34 L56 34 L56 42 L64 52 L64 84 Q64 90 58 90 L42 90 Q36 90 36 84 L36 52 L44 42 Z" fill="#0284c7" stroke="#bae6fd" stroke-width="2.5"/>
+                <polygon points="58,76 68,64 92,64 84,76" fill="#fef08a" stroke="#92400e" stroke-width="1.5"/>
+                <rect x="58" y="76" width="26" height="10" fill="#F6C335" stroke="#92400e" stroke-width="1.5"/>
+                <polygon points="64,86 74,74 98,74 90,86" fill="#fef08a" stroke="#92400e" stroke-width="1.5"/>
+                <rect x="64" y="86" width="26" height="10" fill="#eab308" stroke="#92400e" stroke-width="1.5"/>
+            </svg>`
+        };
+
+        const WEEKLY_CAPTAINS = {
+            week3: {
+                captain: 'Hatsune Miku',
+                outfit: 'Solid Gold Miku',
+                vehicle: 'Chevrolet Corvette ZR1 + Golden Llama Crew',
+                backbling: "Miku's Takarabako Back Bling",
+                jamtrack: 'PPPP Jam Track',
+                loadingscreen: 'May Fortune Find You Loading Screen'
+            },
+            week1: {
+                captain: 'A$AP Rocky',
+                outfit: 'Solid Gold Rugahand',
+                vehicle: 'Mercedes-AMG G 63 + Golden Llama Crew',
+                backbling: 'Testing Gold Chain Back Bling',
+                jamtrack: 'Praise The Lord Jam Track',
+                loadingscreen: 'Flacko Treasure Map Loading Screen'
+            },
+            week2: {
+                captain: "Lil' Uzi Vert",
+                outfit: "Solid Gold Lil' Uzi Vert",
+                vehicle: 'Bugatti Chiron Pur Sport + Golden Llama',
+                backbling: 'Eternal Atake Relic Back Bling',
+                jamtrack: 'Just Wanna Rock Jam Track',
+                loadingscreen: 'Pluto Vault Hunters Loading Screen'
+            },
+            week4: {
+                captain: 'Oscar',
+                outfit: 'Solid Gold Kasane Teto',
+                vehicle: 'McLaren 765LT + Golden Llama Crew',
+                backbling: 'Twin-Drill Treasure Pack',
+                jamtrack: 'Teto Territory Jam Track',
+                loadingscreen: 'Crimson Captain Cove Loading Screen'
+            },
+            week5: {
+                captain: 'Buccaneer Brigand Jones',
+                outfit: 'Solid Gold Captain X',
+                vehicle: 'Galleon Drift Supercar + Golden Llama',
+                backbling: "Captain Jones' Cursed Compass",
+                jamtrack: 'Sea Shanty Royale Jam Track',
+                loadingscreen: 'X Marks The Island Loading Screen'
+            }
+        };
+
+        // Official Epic Games Published Drop Rates (1 in N denominators)
+        const OFFICIAL_TREASURE_DEFS = [
+            {
+                key: 'outfit',
+                tier: 'mythic',
+                rarityLabel: 'MYTHIC GOLD OUTFIT',
+                cardClass: 'rarity-card-mythic',
+                color: '#F6C335',
+                officialDenom: 1562500,
+                treasureHourDenom: 208333, // 7.5x Boost
+                isMajorUnique: true,
+                svgKey: 'outfit',
+                desc: 'Ultra-rare Weekly Captain Solid Gold Outfit! Includes Duplicate Protection.'
+            },
+            {
+                key: 'token',
+                tier: 'token',
+                rarityLabel: 'PIRATE SHOP TOKEN',
+                cardClass: 'rarity-card-token',
+                color: '#00E5FF',
+                officialDenom: 137500,
+                treasureHourDenom: 91667, // 1.5x Boost
+                isMajorUnique: true,
+                svgKey: 'token',
+                desc: 'Grants 14 Days of Free Item Shop Access + 2027 Bonus Token! Shared with active squadmates.'
+            },
+            {
+                key: 'vehicle',
+                tier: 'legendary',
+                rarityLabel: 'LEGENDARY VEHICLE',
+                cardClass: 'rarity-card-legendary',
+                color: '#E87D2B',
+                officialDenom: 7813,
+                treasureHourDenom: 781, // 10x Boost
+                isMajorUnique: true,
+                svgKey: 'vehicle',
+                desc: 'Full Car Body + Golden Llama Crew Decal bundle unlocked for your Locker.'
+            },
+            {
+                key: 'backbling',
+                tier: 'epic',
+                rarityLabel: 'EPIC COSMETIC',
+                cardClass: 'rarity-card-epic',
+                color: '#9D4EDD',
+                officialDenom: 568,
+                treasureHourDenom: 568,
+                isMajorUnique: true,
+                svgKey: 'backbling',
+                desc: 'Weekly Captain Treasure Back Bling / Pickaxe cosmetic reward.'
+            },
+            {
+                key: 'jamtrack',
+                tier: 'rare',
+                rarityLabel: 'RARE JAM TRACK',
+                cardClass: 'rarity-card-rare',
+                color: '#2EC4B6',
+                officialDenom: 391,
+                treasureHourDenom: 391,
+                isMajorUnique: true,
+                svgKey: 'jamtrack',
+                desc: 'Playable Fortnite Festival & Lobby Jam Track.'
+            },
+            {
+                key: 'loadingscreen',
+                tier: 'rare',
+                rarityLabel: 'RARE LOADING SCREEN',
+                cardClass: 'rarity-card-rare',
+                color: '#2EC4B6',
+                officialDenom: 272,
+                treasureHourDenom: 272,
+                isMajorUnique: true,
+                svgKey: 'loadingscreen',
+                desc: 'Illustrated Chapter 7 Treasure Hunters key art Loading Screen.'
+            },
+            {
+                key: 'gizmo',
+                tier: 'uncommon',
+                rarityLabel: 'TREASURE GIZMO',
+                cardClass: 'rarity-card-uncommon',
+                color: '#4CAF50',
+                officialDenom: 127,
+                treasureHourDenom: 127,
+                isMajorUnique: false, // Repeatable in-match utility
+                svgKey: 'gizmo',
+                desc: 'In-match Extraction Gizmo / Accelerator / Portable Extractor (Repeatable drop).'
+            }
+        ];
+
+        const STANDARD_LOOT_NAMES = [
+            'Gold Bars (+75) & Striker AR',
+            'Big Shield Potion & Sovereign Shotgun',
+            'Chug Splash (x2) & Gold Bars (+50)',
+            'Compact SMG & Medkit',
+            'Shockwave Grenades (x2) & Gold Bars'
+        ];
+
+        // --- 4. MAIN APPLICATION CONTROLLER ---
+        class TreasureHuntersSimulator {
+            constructor() {
+                this.audio = new FortniteAudio();
+                this.particles = new ParticleBurst('particleCanvas');
+
+                this.currentWeek = 'week3';
+                this.isTreasureHour = false;
+                this.duplicateProtection = true;
+
+                // Active denominators map (key -> N for 1 in N)
+                this.activeDenominators = {};
+                this.loadOfficialOdds(false);
+
+                // Squad & Match Calculator State
+                this.calcState = {
+                    partySize: 4,
+                    chestsPerPlayer: 8,
+                    matches: 25
+                };
+
+                // Telemetry & Collection State
+                this.stats = {
+                    totalOpened: 0,
+                    dryStreak: 0,
+                    counts: {
+                        outfit: 0,
+                        token: 0,
+                        vehicle: 0,
+                        backbling: 0,
+                        jamtrack: 0,
+                        loadingscreen: 0,
+                        gizmo: 0,
+                        standard: 0
+                    },
+                    unlockedSet: new Set(),
+                    history: []
+                };
+
+                this.batch = {
+                    running: false,
+                    mode: 'visual',
+                    timerId: null,
+                    target: 0,
+                    done: 0
+                };
+
+                this.isAnimatingSingle = false;
+
+                this.bindElements();
+                this.renderCustomOddsTable();
+                this.renderTreasureGallery();
+                this.updateGrindCalculator();
+                this.updateTelemetryUI();
+            }
+
+            loadOfficialOdds(treasureHour) {
+                this.isTreasureHour = treasureHour;
+                OFFICIAL_TREASURE_DEFS.forEach(def => {
+                    this.activeDenominators[def.key] = treasureHour ? def.treasureHourDenom : def.officialDenom;
+                });
+            }
+
+            getRewardDisplayName(key) {
+                const cap = WEEKLY_CAPTAINS[this.currentWeek];
+                if (key === 'outfit') return cap.outfit;
+                if (key === 'token') return 'Pirate Shop Access Token';
+                if (key === 'vehicle') return cap.vehicle;
+                if (key === 'backbling') return cap.backbling;
+                if (key === 'jamtrack') return cap.jamtrack;
+                if (key === 'loadingscreen') return cap.loadingscreen;
+                if (key === 'gizmo') {
+                    const gizmos = ['Extraction Gizmo', 'Treasure Accelerator', 'Portable Extractor'];
+                    return gizmos[Math.floor(Math.random() * gizmos.length)];
+                }
+                return STANDARD_LOOT_NAMES[Math.floor(Math.random() * STANDARD_LOOT_NAMES.length)];
+            }
+
+            bindElements() {
+                // Header controls
+                this.weekPresetSelect = document.getElementById('weekPresetSelect');
+                this.rateNormalBtn = document.getElementById('rateNormalBtn');
+                this.rateTreasureHourBtn = document.getElementById('rateTreasureHourBtn');
+                this.headerRateModeBadge = document.getElementById('headerRateModeBadge');
+                this.soundToggleBtn = document.getElementById('soundToggleBtn');
+                this.resetAllBtn = document.getElementById('resetAllBtn');
+
+                // Chest & Reward card
+                this.chestContainer = document.getElementById('chestContainer');
+                this.openChestBtn = document.getElementById('openChestBtn');
+                this.dupProtectionCheckbox = document.getElementById('dupProtectionCheckbox');
+                this.arenaStatusPill = document.getElementById('arenaStatusPill');
+                this.chestSpotlight = document.getElementById('chestSpotlight');
+
+                this.rewardEmptyState = document.getElementById('rewardEmptyState');
+                this.rewardActiveCard = document.getElementById('rewardActiveCard');
+                this.rewardArtContainer = document.getElementById('rewardArtContainer');
+                this.rewardRarityBadge = document.getElementById('rewardRarityBadge');
+                this.rewardOddsPill = document.getElementById('rewardOddsPill');
+                this.rewardTitleText = document.getElementById('rewardTitleText');
+                this.rewardSubText = document.getElementById('rewardSubText');
+
+                // Batch Controls
+                this.batchCountInput = document.getElementById('batchCountInput');
+                this.runBatchBtn = document.getElementById('runBatchBtn');
+                this.stopBatchBtn = document.getElementById('stopBatchBtn');
+                this.simSpeedVisualBtn = document.getElementById('simSpeedVisualBtn');
+                this.simSpeedTurboBtn = document.getElementById('simSpeedTurboBtn');
+                this.pauseOnMajorCheckbox = document.getElementById('pauseOnMajorCheckbox');
+                this.batchProgressBox = document.getElementById('batchProgressBox');
+                this.batchProgressText = document.getElementById('batchProgressText');
+                this.batchProgressPct = document.getElementById('batchProgressPct');
+                this.batchProgressFill = document.getElementById('batchProgressFill');
+
+                // Grind Calculator Controls
+                this.partyBtns = document.querySelectorAll('.party-btn');
+                this.chestsPerPlayerInput = document.getElementById('chestsPerPlayerInput');
+                this.chestsPerPlayerSlider = document.getElementById('chestsPerPlayerSlider');
+                this.matchesCountInput = document.getElementById('matchesCountInput');
+                this.matchesCountSlider = document.getElementById('matchesCountSlider');
+                this.simulateGrindBtn = document.getElementById('simulateGrindBtn');
+
+                // Celebration Modal
+                this.treasureModal = document.getElementById('treasureModal');
+                this.closeTreasureModalBtn = document.getElementById('closeTreasureModalBtn');
+
+                // Reset Official Odds
+                this.resetOfficialOddsBtn = document.getElementById('resetOfficialOddsBtn');
+
+                // --- Event Wiring ---
+                this.weekPresetSelect.addEventListener('change', (e) => {
+                    this.currentWeek = e.target.value;
+                    this.renderCustomOddsTable();
+                    this.renderTreasureGallery();
+                    this.updateGrindCalculator();
+                });
+
+                this.rateNormalBtn.addEventListener('click', () => this.switchRateMode(false));
+                this.rateTreasureHourBtn.addEventListener('click', () => this.switchRateMode(true));
+
+                this.soundToggleBtn.addEventListener('click', () => {
+                    const muted = this.audio.toggle();
+                    document.getElementById('soundIconText').textContent = muted ? '🔇 MUTED' : '🔊 SFX ON';
+                });
+
+                this.resetAllBtn.addEventListener('click', () => this.resetSession());
+
+                this.dupProtectionCheckbox.addEventListener('change', (e) => {
+                    this.duplicateProtection = e.target.checked;
+                });
+
+                this.chestContainer.addEventListener('click', () => this.handleManualClick());
+                this.openChestBtn.addEventListener('click', () => this.handleManualClick());
+
+                window.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+                        e.preventDefault();
+                        if (!this.treasureModal.classList.contains('hidden')) {
+                            this.treasureModal.classList.add('hidden');
+                        } else {
+                            this.handleManualClick();
+                        }
+                    }
+                });
+
+                this.closeTreasureModalBtn.addEventListener('click', () => {
+                    this.treasureModal.classList.add('hidden');
+                    document.body.classList.remove('treasure-screen-shake');
+                });
+
+                // Batch simulation events
+                this.simSpeedVisualBtn.addEventListener('click', () => {
+                    this.batch.mode = 'visual';
+                    this.simSpeedVisualBtn.className = 'text-cyan-300 font-bold underline cursor-pointer';
+                    this.simSpeedTurboBtn.className = 'text-slate-400 hover:text-white font-bold cursor-pointer';
+                });
+                this.simSpeedTurboBtn.addEventListener('click', () => {
+                    this.batch.mode = 'turbo';
+                    this.simSpeedTurboBtn.className = 'text-yellow-300 font-bold underline cursor-pointer';
+                    this.simSpeedVisualBtn.className = 'text-slate-400 hover:text-white font-bold cursor-pointer';
+                });
+
+                this.runBatchBtn.addEventListener('click', () => {
+                    const n = Math.max(1, Math.min(500000, parseInt(this.batchCountInput.value, 10) || 100));
+                    this.batchCountInput.value = n;
+                    this.startBatchSimulation(n);
+                });
+                this.stopBatchBtn.addEventListener('click', () => this.stopBatchSimulation());
+
+                this.resetOfficialOddsBtn.addEventListener('click', () => {
+                    this.loadOfficialOdds(this.isTreasureHour);
+                    this.renderCustomOddsTable();
+                    this.updateGrindCalculator();
+                });
+
+                // Squad & Match Calculator Events
+                this.partyBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.calcState.partySize = parseInt(btn.dataset.party, 10);
+                        this.partyBtns.forEach(b => {
+                            const active = parseInt(b.dataset.party, 10) === this.calcState.partySize;
+                            b.className = active
+                                ? 'party-btn py-2 px-2 rounded-xl bg-cyan-500/25 border-2 border-cyan-400 text-white text-xs font-fn-sub font-bold transition cursor-pointer'
+                                : 'party-btn py-2 px-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 hover:border-cyan-400 text-xs font-fn-sub font-bold transition cursor-pointer';
+                        });
+                        this.updateGrindCalculator();
+                    });
+                });
+
+                const syncChests = (val) => {
+                    const clean = Math.max(1, Math.min(200, parseInt(val, 10) || 1));
+                    this.calcState.chestsPerPlayer = clean;
+                    this.chestsPerPlayerInput.value = clean;
+                    this.chestsPerPlayerSlider.value = Math.min(40, clean);
+                    this.updateGrindCalculator();
+                };
+                this.chestsPerPlayerInput.addEventListener('input', (e) => syncChests(e.target.value));
+                this.chestsPerPlayerSlider.addEventListener('input', (e) => syncChests(e.target.value));
+
+                const syncMatches = (val) => {
+                    const clean = Math.max(1, Math.min(10000, parseInt(val, 10) || 1));
+                    this.calcState.matches = clean;
+                    this.matchesCountInput.value = clean;
+                    this.matchesCountSlider.value = Math.min(250, clean);
+                    this.updateGrindCalculator();
+                };
+                this.matchesCountInput.addEventListener('input', (e) => syncMatches(e.target.value));
+                this.matchesCountSlider.addEventListener('input', (e) => syncMatches(e.target.value));
+
+                this.simulateGrindBtn.addEventListener('click', () => {
+                    const totalChests = this.calcState.partySize * this.calcState.chestsPerPlayer * this.calcState.matches;
+                    const capped = Math.min(500000, totalChests);
+                    this.batchCountInput.value = capped;
+                    if (capped > 250) {
+                        this.batch.mode = 'turbo';
+                        this.simSpeedTurboBtn.className = 'text-yellow-300 font-bold underline cursor-pointer';
+                        this.simSpeedVisualBtn.className = 'text-slate-400 hover:text-white font-bold cursor-pointer';
+                    }
+                    this.startBatchSimulation(capped);
+                });
+            }
+
+            switchRateMode(treasureHour) {
+                this.loadOfficialOdds(treasureHour);
+                if (treasureHour) {
+                    this.rateTreasureHourBtn.className = 'px-3 py-1 rounded-lg bg-yellow-400 text-slate-950 transition cursor-pointer';
+                    this.rateNormalBtn.className = 'px-3 py-1 rounded-lg text-slate-300 hover:bg-slate-800 transition cursor-pointer';
+                    this.headerRateModeBadge.textContent = '⚡ SATURDAY TREASURE HOUR BOOST';
+                    this.headerRateModeBadge.className = 'px-2 py-0.5 rounded bg-yellow-400/20 border border-yellow-400 text-yellow-300 font-fn-sub font-bold text-[10px] tracking-wider';
+                } else {
+                    this.rateNormalBtn.className = 'px-3 py-1 rounded-lg bg-cyan-500 text-slate-950 transition cursor-pointer';
+                    this.rateTreasureHourBtn.className = 'px-3 py-1 rounded-lg text-yellow-300 hover:bg-yellow-400/10 transition cursor-pointer';
+                    this.headerRateModeBadge.textContent = 'NORMAL MATCH (1X)';
+                    this.headerRateModeBadge.className = 'px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-slate-200 font-fn-sub font-bold text-[10px] tracking-wider';
+                }
+                this.renderCustomOddsTable();
+                this.updateGrindCalculator();
+            }
+
+            // --- CUSTOM ODDS TABLE RENDERER ---
+            renderCustomOddsTable() {
+                const container = document.getElementById('customOddsList');
+                let totalSpecialProb = 0;
+
+                const rowsHtml = OFFICIAL_TREASURE_DEFS.map(def => {
+                    const denom = this.activeDenominators[def.key];
+                    const prob = 1 / denom;
+                    totalSpecialProb += prob;
+                    const pctStr = (prob * 100) < 0.01 ? (prob * 100).toFixed(5) + '%' : (prob * 100).toFixed(3) + '%';
+                    const title = def.key === 'outfit' ? WEEKLY_CAPTAINS[this.currentWeek].outfit :
+                                  def.key === 'token' ? 'Pirate Shop Token' :
+                                  def.key === 'vehicle' ? 'Weekly Supercar + Decal' :
+                                  def.key === 'backbling' ? 'Weekly Back Bling' :
+                                  def.key === 'jamtrack' ? 'Weekly Jam Track' :
+                                  def.key === 'loadingscreen' ? 'Weekly Loading Screen' : 'Extraction Gizmo';
+
+                    return `
+                        <div class="flex items-center justify-between gap-2 bg-slate-950/85 border border-slate-800 rounded-xl px-2.5 py-1.5">
+                            <div class="overflow-hidden">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full shrink-0" style="background:${def.color}"></span>
+                                    <span class="font-bold text-slate-100 truncate">${title}</span>
+                                </div>
+                                <span class="text-[10px] font-mono text-slate-400 pl-3.5">${pctStr} chance</span>
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <span class="text-[10px] text-slate-400 font-mono">1 in</span>
+                                <input data-odds-key="${def.key}" type="number" min="1" max="100000000" value="${denom}"
+                                    class="custom-denom-input w-24 bg-slate-900 border border-slate-700 focus:border-yellow-400 rounded-lg px-2 py-1 text-right font-mono font-bold text-yellow-300 text-xs focus:outline-none">
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                const remPct = Math.max(0, (1 - totalSpecialProb) * 100).toFixed(2);
+                const stdRow = `
+                    <div class="flex items-center justify-between bg-slate-950/50 border border-slate-800/60 rounded-xl px-2.5 py-1.5 text-slate-400">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                            <span class="font-semibold">Standard Chest Loot</span>
+                        </div>
+                        <span class="font-mono font-bold text-slate-300">${remPct}%</span>
+                    </div>
+                `;
+
+                container.innerHTML = rowsHtml + stdRow;
+
+                container.querySelectorAll('.custom-denom-input').forEach(inp => {
+                    inp.addEventListener('change', (e) => {
+                        const key = e.target.dataset.oddsKey;
+                        const val = Math.max(1, Math.min(100000000, parseInt(e.target.value, 10) || 1));
+                        this.activeDenominators[key] = val;
+                        this.renderCustomOddsTable();
+                        this.updateGrindCalculator();
+                    });
+                });
+            }
+
+            // --- SQUAD & MATCH PROBABILITY CALCULATOR ---
+            updateGrindCalculator() {
+                const { partySize, chestsPerPlayer, matches } = this.calcState;
+                const totalChests = partySize * chestsPerPlayer * matches;
+
+                const pToken = 1 / this.activeDenominators.token;
+                const pOutfit = 1 / this.activeDenominators.outfit;
+
+                // Sum of all cosmetic treasures (Loading screen or better, excluding repeatable Gizmo)
+                const pAnyCosmetic = Math.min(0.999999,
+                    (1 / this.activeDenominators.outfit) +
+                    (1 / this.activeDenominators.token) +
+                    (1 / this.activeDenominators.vehicle) +
+                    (1 / this.activeDenominators.backbling) +
+                    (1 / this.activeDenominators.jamtrack) +
+                    (1 / this.activeDenominators.loadingscreen)
+                );
+
+                // Cumulative Binomial Formula: P(>=1) = 1 - (1 - p)^N
+                const probToken = (1 - Math.pow(1 - pToken, totalChests)) * 100;
+                const probOutfit = (1 - Math.pow(1 - pOutfit, totalChests)) * 100;
+                const probAny = (1 - Math.pow(1 - pAnyCosmetic, totalChests)) * 100;
+
+                // 50% and 90% milestone chests for Pirate Token
+                const chests50 = Math.ceil(Math.log(0.5) / Math.log(1 - pToken));
+                const chests90 = Math.ceil(Math.log(0.1) / Math.log(1 - pToken));
+
+                document.getElementById('calcTotalTeamChests').textContent = `${totalChests.toLocaleString()} Chests`;
+                document.getElementById('calcTokenOddsSub').textContent = `At 1 in ${this.activeDenominators.token.toLocaleString()} per chest`;
+                document.getElementById('calcTokenProb').textContent = probToken >= 10 ? probToken.toFixed(2) + '%' : probToken.toFixed(3) + '%';
+
+                document.getElementById('calcOutfitLabel').textContent = `${WEEKLY_CAPTAINS[this.currentWeek].outfit} Chance`;
+                document.getElementById('calcOutfitOddsSub').textContent = `At 1 in ${this.activeDenominators.outfit.toLocaleString()} per chest`;
+                document.getElementById('calcOutfitProb').textContent = probOutfit >= 1 ? probOutfit.toFixed(2) + '%' : probOutfit.toFixed(4) + '%';
+
+                document.getElementById('calcAnyCosmeticProb').textContent = probAny.toFixed(2) + '%';
+                document.getElementById('calcFiftyPctTarget').textContent = `${chests50.toLocaleString()} chests`;
+                document.getElementById('calcNinetyPctTarget').textContent = `${chests90.toLocaleString()}`;
+
+                document.getElementById('simulateGrindBtnText').textContent =
+                    `⚡ SIMULATE THIS ${Math.min(500000, totalChests).toLocaleString()}-CHEST GRIND`;
+            }
+
+            // --- SINGLE CHEST RNG ROLLER ---
+            rollChest() {
+                const r = Math.random();
+                let cumulative = 0;
+                let chosenDef = null;
+
+                for (const def of OFFICIAL_TREASURE_DEFS) {
+                    const p = 1 / this.activeDenominators[def.key];
+                    cumulative += p;
+                    if (r < cumulative) {
+                        // Check Duplicate Protection if enabled
+                        if (this.duplicateProtection && def.isMajorUnique && this.stats.unlockedSet.has(def.key)) {
+                            // Rerolls into Standard Loot once already owned
+                            chosenDef = null;
+                        } else {
+                            chosenDef = def;
+                        }
+                        break;
+                    }
+                }
+
+                this.stats.totalOpened += 1;
+
+                if (chosenDef) {
+                    this.stats.counts[chosenDef.key] += 1;
+                    if (chosenDef.isMajorUnique) {
+                        this.stats.unlockedSet.add(chosenDef.key);
+                    }
+                    if (chosenDef.key === 'token' || chosenDef.key === 'outfit') {
+                        this.stats.dryStreak = 0;
+                    } else {
+                        this.stats.dryStreak += 1;
+                    }
+
+                    const record = {
+                        chestNum: this.stats.totalOpened,
+                        key: chosenDef.key,
+                        tier: chosenDef.tier,
+                        rarityLabel: chosenDef.rarityLabel,
+                        cardClass: chosenDef.cardClass,
+                        color: chosenDef.color,
+                        svgKey: chosenDef.svgKey,
+                        desc: chosenDef.desc,
+                        denom: this.activeDenominators[chosenDef.key],
+                        name: this.getRewardDisplayName(chosenDef.key),
+                        isSpecial: true
+                    };
+                    this.pushHistory(record);
+                    return record;
+                } else {
+                    this.stats.counts.standard += 1;
+                    this.stats.dryStreak += 1;
+                    const record = {
+                        chestNum: this.stats.totalOpened,
+                        key: 'standard',
+                        tier: 'common',
+                        rarityLabel: 'STANDARD LOOT',
+                        cardClass: 'rarity-card-common',
+                        color: '#9E9E9E',
+                        svgKey: 'standard',
+                        desc: 'Standard Battle Royale chest weapons, shields, and Gold Bars.',
+                        denom: null,
+                        name: this.getRewardDisplayName('standard'),
+                        isSpecial: false
+                    };
+                    this.pushHistory(record);
+                    return record;
+                }
+            }
+
+            pushHistory(record) {
+                this.stats.history.unshift(record);
+                if (this.stats.history.length > 30) this.stats.history.pop();
+            }
+
+            // --- MANUAL CLICK OPENING ---
+            handleManualClick() {
+                if (this.batch.running || this.isAnimatingSingle) return;
+                this.isAnimatingSingle = true;
+
+                this.chestContainer.classList.remove('chest-idle', 'chest-open');
+                void this.chestContainer.offsetWidth;
+                this.chestContainer.classList.add('chest-shaking');
+                this.arenaStatusPill.textContent = '✨ UNLOCKING TREASURE...';
+
+                setTimeout(() => {
+                    this.chestContainer.classList.remove('chest-shaking');
+                    this.chestContainer.classList.add('chest-open');
+
+                    const result = this.rollChest();
+                    this.renderRewardPresentation(result, false);
+                    this.updateTelemetryUI();
+                    if (result.isSpecial) this.renderTreasureGallery();
+
+                    setTimeout(() => {
+                        this.isAnimatingSingle = false;
+                        if (!this.batch.running) {
+                            this.arenaStatusPill.textContent = '⚡ CLICK CHEST OR PRESS SPACE';
+                        }
+                    }, 260);
+                }, 220);
+            }
+
+            renderRewardPresentation(drop, isFastBatch = false) {
+                this.rewardEmptyState.classList.add('hidden');
+                this.rewardActiveCard.className = `w-full max-w-[310px] rounded-2xl border-2 p-3 shadow-2xl flex items-center gap-3.5 fn-sheen loot-pop-anim ${drop.cardClass}`;
+                this.rewardArtContainer.innerHTML = REWARD_SVGS[drop.svgKey];
+                this.rewardRarityBadge.textContent = drop.rarityLabel;
+                this.rewardTitleText.textContent = drop.name;
+
+                if (drop.denom) {
+                    this.rewardOddsPill.textContent = `1 in ${drop.denom.toLocaleString()}`;
+                    this.rewardSubText.textContent = `Chest #${drop.chestNum.toLocaleString()} • Official Treasure!`;
+                } else {
+                    this.rewardOddsPill.textContent = 'Standard';
+                    this.rewardSubText.textContent = `Chest #${drop.chestNum.toLocaleString()}`;
+                }
+
+                this.chestSpotlight.style.background = `radial-gradient(circle at 50% 42%, ${drop.color}48 0%, transparent 68%)`;
+
+                const rect = this.chestContainer.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+
+                const isJackpot = drop.key === 'token' || drop.key === 'outfit' || drop.key === 'vehicle';
+                if (isJackpot) {
+                    this.audio.playFanfare();
+                    this.particles.spawn(cx, cy, ['#fef08a', '#F6C335', '#00E5FF', '#ffffff'], 130, 17, true);
+                    document.body.classList.remove('treasure-screen-shake');
+                    void document.body.offsetWidth;
+                    document.body.classList.add('treasure-screen-shake');
+                    this.openCelebrationModal(drop);
+                } else if (drop.isSpecial) {
+                    this.audio.playOpen(drop.tier);
+                    this.particles.spawn(cx, cy, [drop.color, '#ffffff', '#fef08a'], 45, 11, false);
+                } else {
+                    if (isFastBatch) {
+                        this.audio.playTick();
+                    } else {
+                        this.audio.playOpen('common');
+                        this.particles.spawn(cx, cy, ['#d4d4d8', '#F6C335'], 18, 8, false);
+                    }
+                }
+            }
+
+            openCelebrationModal(drop) {
+                document.getElementById('modalTreasureSubtitle').textContent =
+                    `1 in ${drop.denom.toLocaleString()} Drop Rate • Unlocked on Chest #${drop.chestNum.toLocaleString()}`;
+                document.getElementById('modalArtWrapper').className =
+                    `mx-auto w-56 rounded-2xl p-1.5 shadow-2xl mb-5 fn-sheen ${drop.cardClass}`;
+                document.getElementById('modalRewardSvg').innerHTML = REWARD_SVGS[drop.svgKey];
+                document.getElementById('modalRewardRarityTag').textContent = drop.rarityLabel;
+                document.getElementById('modalRewardName').textContent = drop.name;
+                document.getElementById('modalRewardDesc').textContent = drop.desc;
+                document.getElementById('modalOddsStat').textContent = `1 in ${drop.denom.toLocaleString()}`;
+                document.getElementById('modalChestNumStat').textContent = `#${drop.chestNum.toLocaleString()}`;
+                this.treasureModal.classList.remove('hidden');
+            }
+
+            // --- BATCH AUTO-SIMULATION ---
+            startBatchSimulation(count) {
+                if (this.batch.running) return;
+                this.batch.running = true;
+                this.batch.target = count;
+                this.batch.done = 0;
+
+                this.runBatchBtn.classList.add('hidden');
+                this.stopBatchBtn.classList.remove('hidden');
+                this.batchProgressBox.classList.remove('hidden');
+                this.openChestBtn.disabled = true;
+                this.openChestBtn.classList.add('opacity-50');
+                this.chestContainer.classList.remove('chest-idle');
+                this.chestContainer.classList.add('chest-open');
+                this.arenaStatusPill.textContent = `🔄 SIMULATING ${count.toLocaleString()} CHESTS...`;
+
+                const pauseOnMajor = this.pauseOnMajorCheckbox.checked;
+
+                if (this.batch.mode === 'turbo') {
+                    const stepFrame = () => {
+                        if (!this.batch.running) return;
+                        const chunk = Math.min(8000, this.batch.target - this.batch.done);
+                        let lastDrop = null;
+                        let majorHit = null;
+                        let unlockedAnyNew = false;
+
+                        for (let i = 0; i < chunk; i++) {
+                            lastDrop = this.rollChest();
+                            this.batch.done++;
+                            if (lastDrop.isSpecial) unlockedAnyNew = true;
+                            if (lastDrop.key === 'token' || lastDrop.key === 'outfit') {
+                                majorHit = lastDrop;
+                                if (pauseOnMajor) break;
+                            }
+                        }
+
+                        this.updateBatchProgress();
+                        this.updateTelemetryUI();
+                        if (unlockedAnyNew) this.renderTreasureGallery();
+
+                        if (majorHit) {
+                            this.renderRewardPresentation(majorHit, false);
+                            if (pauseOnMajor) {
+                                this.stopBatchSimulation(true);
+                                return;
+                            }
+                        } else if (lastDrop) {
+                            this.renderRewardPresentation(lastDrop, true);
+                        }
+
+                        if (this.batch.done < this.batch.target) {
+                            this.batch.timerId = requestAnimationFrame(stepFrame);
+                        } else {
+                            this.stopBatchSimulation(false);
+                        }
+                    };
+                    this.batch.timerId = requestAnimationFrame(stepFrame);
+                } else {
+                    const interval = count <= 30 ? 150 : 45;
+                    const rollsPerTick = count > 500 ? Math.ceil(count / 200) : 1;
+
+                    this.batch.timerId = setInterval(() => {
+                        if (!this.batch.running) return;
+                        const chunk = Math.min(rollsPerTick, this.batch.target - this.batch.done);
+                        let lastDrop = null;
+                        let majorHit = null;
+                        let unlockedAnyNew = false;
+
+                        for (let i = 0; i < chunk; i++) {
+                            lastDrop = this.rollChest();
+                            this.batch.done++;
+                            if (lastDrop.isSpecial) unlockedAnyNew = true;
+                            if (lastDrop.key === 'token' || lastDrop.key === 'outfit') {
+                                majorHit = lastDrop;
+                                if (pauseOnMajor) break;
+                            }
+                        }
+
+                        this.chestContainer.classList.remove('chest-shaking');
+                        void this.chestContainer.offsetWidth;
+                        this.chestContainer.classList.add('chest-shaking');
+
+                        this.updateBatchProgress();
+                        this.updateTelemetryUI();
+                        if (unlockedAnyNew) this.renderTreasureGallery();
+
+                        if (majorHit) {
+                            this.renderRewardPresentation(majorHit, false);
+                            if (pauseOnMajor) {
+                                this.stopBatchSimulation(true);
+                                return;
+                            }
+                        } else if (lastDrop) {
+                            this.renderRewardPresentation(lastDrop, true);
+                        }
+
+                        if (this.batch.done >= this.batch.target) {
+                            this.stopBatchSimulation(false);
+                        }
+                    }, interval);
+                }
+            }
+
+            updateBatchProgress() {
+                const pct = Math.min(100, Math.round((this.batch.done / this.batch.target) * 100));
+                this.batchProgressText.textContent = `${this.batch.done.toLocaleString()} / ${this.batch.target.toLocaleString()}`;
+                this.batchProgressPct.textContent = `${pct}%`;
+                this.batchProgressFill.style.width = `${pct}%`;
+            }
+
+            stopBatchSimulation(foundMajor = false) {
+                this.batch.running = false;
+                clearInterval(this.batch.timerId);
+                cancelAnimationFrame(this.batch.timerId);
+                this.runBatchBtn.classList.remove('hidden');
+                this.stopBatchBtn.classList.add('hidden');
+                this.openChestBtn.disabled = false;
+                this.openChestBtn.classList.remove('opacity-50');
+                this.chestContainer.classList.remove('chest-shaking');
+                this.arenaStatusPill.textContent = foundMajor ? '★ MAJOR TREASURE FOUND!' : '⚡ CLICK CHEST OR PRESS SPACE';
+            }
+
+            // --- TELEMETRY & COLLECTION GALLERY ---
+            updateTelemetryUI() {
+                const total = this.stats.totalOpened;
+                const tokens = this.stats.counts.token;
+                const specialCount =
+                    this.stats.counts.outfit +
+                    this.stats.counts.token +
+                    this.stats.counts.vehicle +
+                    this.stats.counts.backbling +
+                    this.stats.counts.jamtrack +
+                    this.stats.counts.loadingscreen;
+
+                document.getElementById('statOpened').textContent = total.toLocaleString();
+                document.getElementById('statTokens').textContent = tokens.toLocaleString();
+                document.getElementById('statTreasures').textContent = specialCount.toLocaleString();
+                document.getElementById('statDryStreak').textContent = `Token/Outfit Dry Streak: ${this.stats.dryStreak.toLocaleString()}`;
+
+                const luckTag = document.getElementById('sessionLuckTag');
+                if (tokens > 0 || this.stats.counts.outfit > 0) {
+                    luckTag.textContent = '🔥 JACKPOT HIT';
+                    luckTag.className = 'px-2 py-0.5 rounded bg-yellow-400/20 text-yellow-300 border border-yellow-400/50 text-[11px] font-bold';
+                } else if (total > 0) {
+                    luckTag.textContent = 'Hunting...';
+                    luckTag.className = 'px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[11px] font-bold';
+                } else {
+                    luckTag.textContent = 'Ready';
+                    luckTag.className = 'px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px] font-bold';
+                }
+
+                const logEl = document.getElementById('dropLogContainer');
+                if (this.stats.history.length === 0) {
+                    logEl.innerHTML = `<div class="text-center py-4 text-xs text-slate-500 italic">Open a chest to log rewards...</div>`;
+                } else {
+                    logEl.innerHTML = this.stats.history.map(item => `
+                        <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-xs ${item.isSpecial ? 'bg-slate-900 border-yellow-400/50' : 'bg-slate-950/70 border-slate-800/70'}">
+                            <div class="flex items-center gap-2 overflow-hidden">
+                                <span class="font-mono text-[10px] text-slate-500">#${item.chestNum.toLocaleString()}</span>
+                                <span class="w-2 h-2 rounded-full shrink-0" style="background:${item.color}"></span>
+                                <span class="font-semibold text-slate-200 truncate">${item.name}</span>
+                            </div>
+                            <span class="font-fn-sub font-bold text-[10px] shrink-0 ml-2" style="color:${item.color}">
+                                ${item.isSpecial ? item.rarityLabel : 'LOOT'}
+                            </span>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            renderTreasureGallery() {
+                const grid = document.getElementById('treasureGalleryGrid');
+                document.getElementById('collectionProgressText').textContent = `${this.stats.unlockedSet.size} / 7`;
+
+                grid.innerHTML = OFFICIAL_TREASURE_DEFS.map(def => {
+                    const count = this.stats.counts[def.key];
+                    const unlocked = count > 0;
+                    const name = this.getRewardDisplayName(def.key);
+                    const denom = this.activeDenominators[def.key];
+
+                    return `
+                        <div class="rounded-2xl border-2 p-2.5 flex flex-col justify-between transition-all ${unlocked ? def.cardClass + ' fn-sheen shadow-lg scale-[1.01]' : 'bg-slate-950/85 border-slate-800 opacity-75'}">
+                            <div>
+                                <div class="flex items-center justify-between gap-1 mb-1.5">
+                                    <span class="text-[9px] font-fn-sub font-extrabold px-1.5 py-0.5 rounded bg-black/60 text-white truncate">
+                                        1 IN ${denom.toLocaleString()}
+                                    </span>
+                                    <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${unlocked ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400'}">
+                                        ${unlocked ? 'x' + count : 'LOCKED'}
+                                    </span>
+                                </div>
+
+                                <div class="w-full h-24 rounded-xl bg-slate-950/75 border border-white/15 flex items-center justify-center p-2 mb-2">
+                                    <div class="w-16 h-16 ${unlocked ? '' : 'grayscale opacity-50'}">
+                                        ${REWARD_SVGS[def.svgKey]}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <span class="text-[9px] font-fn-sub font-bold uppercase tracking-wider block ${unlocked ? 'text-white/90' : 'text-slate-400'}">
+                                    ${def.rarityLabel}
+                                </span>
+                                <h3 class="font-fn-display text-sm text-white leading-tight line-clamp-2">
+                                    ${def.key === 'gizmo' ? 'Treasure Extraction Gizmos' : name}
+                                </h3>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            resetSession() {
+                this.stopBatchSimulation(false);
+                this.stats = {
+                    totalOpened: 0,
+                    dryStreak: 0,
+                    counts: { outfit: 0, token: 0, vehicle: 0, backbling: 0, jamtrack: 0, loadingscreen: 0, gizmo: 0, standard: 0 },
+                    unlockedSet: new Set(),
+                    history: []
+                };
+                this.chestContainer.classList.remove('chest-open', 'chest-shaking');
+                this.chestContainer.classList.add('chest-idle');
+                this.rewardActiveCard.classList.add('hidden');
+                this.rewardEmptyState.classList.remove('hidden');
+                this.batchProgressBox.classList.add('hidden');
+                this.updateTelemetryUI();
+                this.renderTreasureGallery();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            window.treasureApp = new TreasureHuntersSimulator();
+        });
+    </script>
+</body>
+</html>
